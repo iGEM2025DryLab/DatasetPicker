@@ -63,20 +63,7 @@ class ImageProcessor:
         
         processed = frame.copy()
         
-        # Apply crop first (before rotation to maintain coordinates)
-        if self.crop_region:
-            x, y, w, h = self.crop_region
-            height, width = processed.shape[:2]
-            
-            # Ensure crop region is within bounds
-            x = max(0, min(x, width - 1))
-            y = max(0, min(y, height - 1))
-            w = max(1, min(w, width - x))
-            h = max(1, min(h, height - y))
-            
-            processed = processed[y:y+h, x:x+w]
-        
-        # Apply rotation
+        # Apply rotation first
         if self.rotation_angle == 90:
             processed = cv2.rotate(processed, cv2.ROTATE_90_CLOCKWISE)
         elif self.rotation_angle == 180:
@@ -91,6 +78,19 @@ class ImageProcessor:
             processed = cv2.flip(processed, 1)   # Horizontal
         elif self.flip_vertical:
             processed = cv2.flip(processed, 0)   # Vertical
+        
+        # Apply crop last (after rotation, so crop coordinates match displayed image)
+        if self.crop_region:
+            x, y, w, h = self.crop_region
+            height, width = processed.shape[:2]
+            
+            # Ensure crop region is within bounds
+            x = max(0, min(x, width - 1))
+            y = max(0, min(y, height - 1))
+            w = max(1, min(w, width - x))
+            h = max(1, min(h, height - y))
+            
+            processed = processed[y:y+h, x:x+w]
         
         return processed
     

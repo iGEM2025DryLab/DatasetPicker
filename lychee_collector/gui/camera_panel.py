@@ -334,15 +334,15 @@ class CameraControlPanel:
         x2 = max(0, min(x2, self.display_width))
         y2 = max(0, min(y2, self.display_height))
         
-        # Get current frame to determine actual size
-        current_frame = self.camera_feed.get_current_frame(processed=False)
-        if current_frame is not None:
-            if len(current_frame.shape) == 3:
-                actual_height, actual_width = current_frame.shape[:2]
+        # Get current processed frame to determine actual rotated size
+        processed_frame = self.camera_feed.get_current_frame(processed=True)
+        if processed_frame is not None:
+            if len(processed_frame.shape) == 3:
+                actual_height, actual_width = processed_frame.shape[:2]
             else:
-                actual_height, actual_width = current_frame.shape
+                actual_height, actual_width = processed_frame.shape
             
-            # Scale coordinates to actual image size
+            # Scale coordinates to actual processed image size
             scale_x = actual_width / self.display_width
             scale_y = actual_height / self.display_height
             

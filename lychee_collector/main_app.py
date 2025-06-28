@@ -178,6 +178,25 @@ class LycheeDataCollectorApp:
             messagebox.showerror("Validation Error", error_msg)
             return
         
+        # Check for missing images and warn user
+        missing_images = []
+        if self.rgb_image_data is None:
+            missing_images.append("RGB image")
+        if self.nir_image_data is None:
+            missing_images.append("NIR image")
+        
+        if missing_images:
+            missing_str = " and ".join(missing_images)
+            result = messagebox.askyesno(
+                "Missing Images", 
+                f"Warning: {missing_str} not captured yet.\n\n"
+                f"Do you want to save the sample without the {missing_str}?\n\n"
+                f"You can capture the {missing_str} later and save again to update the sample.",
+                icon='warning'
+            )
+            if not result:
+                return
+        
         # Get current sample data
         sample = self.data_panel.get_sample_data()
         
@@ -199,8 +218,11 @@ class LycheeDataCollectorApp:
         
         # Save to database
         if self.data_manager.save_sample(sample):
+            success_msg = f"Sample {sample.sample_id} saved successfully"
+            if missing_images:
+                success_msg += f"\n\nNote: Remember to capture the {' and '.join(missing_images)} later."
             self.status_var.set(f"Sample {sample.sample_id} saved successfully")
-            messagebox.showinfo("Success", f"Sample {sample.sample_id} saved successfully")
+            messagebox.showinfo("Success", success_msg)
         else:
             messagebox.showerror("Error", "Failed to save sample")
     
