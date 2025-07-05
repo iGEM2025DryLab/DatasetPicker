@@ -52,7 +52,7 @@ class DataEntryPanel:
         # Lychee Variation
         ttk.Label(self.main_frame, text="Lychee Variation:").grid(row=row, column=0, sticky=tk.W, pady=2)
         self.variation_combo = ttk.Combobox(self.main_frame, textvariable=self.variation_var, 
-                                          values=['NMZ', 'GW', 'FZX'])
+                                          values=['NMZ', 'GW', 'FZX', 'HS', 'HZ', 'BTY', 'JZ'])
         self.variation_combo.grid(row=row, column=1, sticky=(tk.W, tk.E), padx=(10, 0), pady=2)
         row += 1
         
@@ -255,8 +255,8 @@ class DataEntryPanel:
     
     def clear_form(self):
         """Clear all form fields"""
-        self.variation_var.set("")
-        self.days_var.set("")
+        # self.variation_var.set("")
+        # self.days_var.set("")
         self.sugar_var.set("")
         self.acid_var.set("")
         self.ph_var.set("")

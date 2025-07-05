@@ -79,22 +79,24 @@ class LycheeDataCollectorApp:
         control_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 0))
         
         # Control buttons
+        ttk.Button(control_frame, text="Capture All", 
+                  command=self.capture_all_images).grid(row=0, column=0, padx=(0, 5))
         ttk.Button(control_frame, text="Save Sample", 
-                  command=self.save_sample).grid(row=0, column=0, padx=(0, 5))
+                  command=self.save_sample).grid(row=1, column=0, padx=(0, 5))
         ttk.Button(control_frame, text="New Sample", 
-                  command=self.new_sample).grid(row=0, column=1, padx=5)
+                  command=self.new_sample).grid(row=1, column=1, padx=5)
         ttk.Button(control_frame, text="Load Sample", 
-                  command=self.load_sample).grid(row=0, column=2, padx=5)
+                  command=self.load_sample).grid(row=1, column=2, padx=5)
         ttk.Button(control_frame, text="Delete Sample", 
-                  command=self.delete_sample).grid(row=0, column=3, padx=5)
+                  command=self.delete_sample).grid(row=1, column=3, padx=5)
         ttk.Button(control_frame, text="Export Data", 
-                  command=self.export_data).grid(row=0, column=4, padx=5)
+                  command=self.export_data).grid(row=1, column=4, padx=5)
         ttk.Button(control_frame, text="Statistics", 
-                  command=self.show_statistics).grid(row=0, column=5, padx=5)
+                  command=self.show_statistics).grid(row=1, column=5, padx=5)
         
         # Camera detection refresh
         ttk.Button(control_frame, text="Refresh Cameras", 
-                  command=self.refresh_cameras).grid(row=0, column=6, padx=(20, 0))
+                  command=self.refresh_cameras).grid(row=1, column=6, padx=(20, 0))
     
     def create_status_bar(self):
         """Create status bar"""
@@ -148,6 +150,44 @@ class LycheeDataCollectorApp:
     def on_data_changed(self, sample_data: SampleData):
         """Handle data entry changes"""
         self.current_sample = sample_data
+    
+    def capture_all_images(self):
+        """Capture both RGB and NIR images simultaneously"""
+        # Check if cameras are connected
+        rgb_connected = (self.camera_panel.rgb_panel and 
+                        self.camera_panel.rgb_panel.camera_feed.is_connected)
+        nir_connected = (self.camera_panel.nir_panel and 
+                        self.camera_panel.nir_panel.camera_feed.is_connected)
+        
+        if not rgb_connected and not nir_connected:
+            messagebox.showwarning("Warning", "No cameras are connected. Please connect at least one camera first.")
+            return
+        
+        # Check if we have a valid sample ID
+        if not self.current_sample.sample_id:
+            messagebox.showwarning("Warning", "Please create a new sample first before capturing images.")
+            return
+        
+        # Capture RGB image if connected
+        if rgb_connected:
+            self.camera_panel.rgb_panel.capture_image()
+        
+        # Capture NIR image if connected
+        if nir_connected:
+            self.camera_panel.nir_panel.capture_image()
+        
+        # Update status
+        captured_images = []
+        if rgb_connected:
+            captured_images.append("RGB")
+        if nir_connected:
+            captured_images.append("NIR")
+        
+        images_str = " and ".join(captured_images)
+        self.status_var.set(f"{images_str} images captured")
+        
+        # Show success message
+        # messagebox.showinfo("Capture Complete", f"Successfully captured {images_str.lower()} images for sample {self.current_sample.sample_id}")
     
     def save_rgb_image(self):
         """Save RGB image to disk"""
@@ -222,7 +262,7 @@ class LycheeDataCollectorApp:
             if missing_images:
                 success_msg += f"\n\nNote: Remember to capture the {' and '.join(missing_images)} later."
             self.status_var.set(f"Sample {sample.sample_id} saved successfully")
-            messagebox.showinfo("Success", success_msg)
+            # messagebox.showinfo("Success", success_msg)
         else:
             messagebox.showerror("Error", "Failed to save sample")
     
